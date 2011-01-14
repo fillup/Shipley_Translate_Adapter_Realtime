@@ -1,0 +1,21 @@
+<h1>Shipley_Translate_Adapter_Realtime_Google</h1>
+<form name="testTranslate" id="testTranslateForm" action="" method="post">
+    <fieldset id="fromTextField">
+        <legend><label for="fromText">English text to translate:</label></legend>
+        <input type="text" name="fromText" id="fromText" value="<?=$this->fromText?>" />        
+    </fieldset>
+    <fieldset id="toLangCodeField">
+        <legend><label for="langCode">Language code to translate to:</label></legend>
+        <select name="langCode" id="langCode">
+<?php
+		foreach($this->langList as $code => $value){
+?>
+            <option value="<?=$code?>" <?php if($this->langCode == $code){ echo "selected=\"selected\"";}?>><?=$value?></option>
+<?php 
+		}
+?>
+        </select>        
+    </fieldset>
+    <input type="submit" value="Translate" />
+</form>
+'<?=$this->fromText?>' has been translated to '<?php echo $this->tl->translate($this->fromText,$this->langCode)?>'.
