@@ -12,20 +12,32 @@ class Shipley_Translate_Adapter_Realtime extends Zend_Translate_Adapter
 	private $realtimeTranslator = false;
 	private $doRealtimeTranslation = true;
 	
+    /**
+     * If a static adapter name and path to source file are supplied,
+     * initiate appropriate Zend Translate object into $this->staticTranslator
+     * @param array $options
+     */
     function __construct ($options=array())
     {
-    	if(isset($options['staticAdapter']) && isset($options['content'])){
+        if(isset($options['staticAdapter']) && isset($options['content'])){
+    		$options['adapter'] = $options['staticAdapter'];
     		$locale = isset($options['locale']) ? $options['locale'] : 'en';
-    		$this->staticTransltor = new Zend_Translate(
-	    		array(
-	    			'adapter' => $options['staticAdapter'],
-	    			'content' => $options['content'],
-	    			'locale'  => $locale
-	    		)
-	    	);
+    		$this->staticTransltor = new Zend_Translate($options);
     	}
-    	
-    	
+    }
+    
+    /**
+     * 
+     * @param   mixed              $data
+     * @param   string|Zend_Locale $locale
+     * @param   array              $options (optional)
+     * @return  array
+     * @see Zend_Translate_Adapter::_loadTranslationData()
+     */
+    protected function _loadTranslationData ($data, $locale, 
+    											array $options = array())
+    {
+    	$this->staticTransltor->loadTranslationData($data,$locale,$options);
     }
     
     private function initRealtimeAdapter()

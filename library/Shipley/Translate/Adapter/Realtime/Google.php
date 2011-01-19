@@ -1,11 +1,11 @@
 <?php
-require_once ('Zend/Translate/Adapter.php');
+require_once ('Shipley/Translate/Adapter/Realtime.php');
 /** 
  * @author pshipley
  * 
  * 
  */
-class Shipley_Translate_Adapter_Realtime_Google extends Zend_Translate_Adapter
+class Shipley_Translate_Adapter_Realtime_Google extends Shipley_Translate_Adapter_Realtime
 {
     // Internal variables
     private $_apiToken = '';
