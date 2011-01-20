@@ -5,3 +5,4 @@
 .settings
 .zfproject.xml
 library/Zend/
+application/configs/tokens.ini
