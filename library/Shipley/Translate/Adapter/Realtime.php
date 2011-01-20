@@ -11,6 +11,8 @@ class Shipley_Translate_Adapter_Realtime extends Zend_Translate_Adapter
 	private $staticTransltor = false;
 	private $realtimeTranslator = false;
 	private $doRealtimeTranslation = true;
+	private $debugMode = Zend_Log::WARN; // Set to false you want to disable.
+	private $debugLog = false;
 	
     /**
      * If a static adapter name and path to source file are supplied,
@@ -19,11 +21,30 @@ class Shipley_Translate_Adapter_Realtime extends Zend_Translate_Adapter
      */
     function __construct ($options=array())
     {
-        if(isset($options['staticAdapter']) && isset($options['content'])){
+    	if($options['debugMode'] == true && isset($options['logger'])){
+    		$this->debugMode = true;
+    		$this->initDebugMode($options['logger']);
+    	}
+    	
+    	$this->debugOutput('Constructing Shipley_Translate_Adapter_Realtime with static adapter: '.
+    					   (isset($options['staticAdapter']) ? $options['staticAdapter'] : 'none').
+    					   ', realtime adapter: '.$options['realtimeTranslator'].', locale: '.$options['locale'],Zend_Log::INFO);
+        
+    	if(isset($options['staticAdapter']) && isset($options['content'])){
     		$options['adapter'] = $options['staticAdapter'];
     		$locale = isset($options['locale']) ? $options['locale'] : 'en';
+    		$this->debugOutput('Initiating Static Translator with adapter: '.$options['adapter'].' and content: '.$options['content'],Zend_Log::INFO);
     		$this->staticTransltor = new Zend_Translate($options);
     	}
+    	
+    	if(isset($options['doRealtimeTranslation']) && $options['doRealtimeTranslation'] != $this->doRealtimeTranslation){
+    		$this->doRealtimeTranslation = $options['doRealtimeTranslation'];
+    	}
+    	
+    	foreach($options as $key => $value){
+    		$this->_options[$key] = $value;
+    	}
+    	
     }
     
     /**
@@ -37,13 +58,16 @@ class Shipley_Translate_Adapter_Realtime extends Zend_Translate_Adapter
     protected function _loadTranslationData ($data, $locale, 
     											array $options = array())
     {
+    	$this->debugOutput('Loading static translator translation data. Data: '.$data.', locale: '.$locale.', options: '.print_r($options,true),Zend_Log::INFO);
     	$this->staticTransltor->loadTranslationData($data,$locale,$options);
     }
     
     private function initRealtimeAdapter()
     {
+    	
     	$realtimeAdapterName = $this->getOptions('realtimeTranslator');
     	$saveTranslationResults = $this->getOptions('saveTranslationResults');
+    	$this->debugOutput('Initiating realtime translator with adapter '.$realtimeAdapterName,Zend_Log::INFO);
     	if($saveTranslationResults && isStaticAdapterUpdateable($realtimeAdapterName)){
     		$saveTranslationResults = true;
     	} else {
@@ -75,6 +99,8 @@ class Shipley_Translate_Adapter_Realtime extends Zend_Translate_Adapter
     
     private function addToStaticTranslationSource($message,$translatedValue, $locale)
     {
+    	$this->debugOutput('Adding new translation to static translation source.'.
+    					   ' Message Id: \''.$message.'\', translated value: \''.$translatedValue.'\', locale: \''.$locale.'\'',Zend_Log::INFO);
     	return true;
     }
     
@@ -174,7 +200,9 @@ class Shipley_Translate_Adapter_Realtime extends Zend_Translate_Adapter
                     return $this->_translate[$locale][$plural[0]][$rule];
                 }
             }
-        } else if (is_string($messageId) && !isset($this->_translate[$locale][$messageId]) && $this->getOptions('doRealtimeTranslation')) {
+        } else if (is_string($messageId) && !isset($this->_translate[$locale][$messageId]) && $this->doRealtimeTranslation) {
+        	$this->debugOutput('Message not found in static translation source for: \''.$messageId.'\', will try realtime translation.',Zend_Log::WARN);
+        	$this->initRealtimeAdapter();
         	$translatedValue = $this->realtimeTranslator->callApi($messageId,$locale);
         	if(!$translatedValue){
         		return $messageId;
@@ -204,6 +232,20 @@ class Shipley_Translate_Adapter_Realtime extends Zend_Translate_Adapter
         }
 
         return $plural[$rule];
+    }
+    
+    private function initDebugMode($logger)
+    {	
+    	if($logger instanceof Zend_Log){
+    		$this->debugLog = $logger;
+    	}
+    }
+    
+    private function debugOutput($message,$priority=Zend_Log::WARN)
+    {
+    	if($this->debugMode && $priority >= $this->debugMode){
+    		$this->debugLog->log($message,$priority);
+    	}
     }
     
 	/**

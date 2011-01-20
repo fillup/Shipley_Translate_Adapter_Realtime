@@ -33,7 +33,7 @@ class Shipley_Translate_Adapter_Realtime_Google extends Shipley_Translate_Adapte
     		}
     	}
     	
-    	if(isset($options['localSourceType']){
+    	if(isset($options['localSourceType'])){
     		if($options['localSourceType'] == 'Tmx'){
     			$localTranslate = new Zend_Translate(
     				array(

@@ -12,9 +12,15 @@ class IndexController extends Zend_Controller_Action
     {
     	//include_once('Shipley/Translate/Adapter/Realtime/Google.php');
         //$this->view->tl = new Shipley_Translate_Adapter_Realtime_Google();
+        $bootstrap = $this->getInvokeArg('bootstrap');
+        $logger = Zend_Registry::get('logger');
         $this->view->tl = new Zend_Translate(
         	array(
-        		'adapter' => 'Shipley_Translate_Adapter_Realtime_Google'
+        		'adapter' => 'Shipley_Translate_Adapter_Realtime',
+        		'realtimeTranslator' => 'Shipley_Translate_Adapter_Realtime_Google',
+        		'debugMode' => true,
+        		'logger' => $logger,
+        		'locale' => 'en'
         	)
         );
     	
